@@ -12,6 +12,7 @@
   import Tree from './components/Main.vue';
   import axios from 'axios';
 
+  import 'leaflet/dist/leaflet.css';
   export default {
     name: 'app',
     components: {
@@ -47,7 +48,6 @@
         -moz-osx-font-smoothing: grayscale;
         text-align: center;
         color: #2c3e50;
-        margin-top: 60px;
     }
 
     .spin-wrapper {

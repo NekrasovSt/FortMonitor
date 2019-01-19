@@ -43,4 +43,26 @@ describe('Main.vue', () => {
     expect(wrapper.vm.getTypeDescription('group')).toBe('Группа');
     expect(wrapper.vm.getTypeDescription('object')).toBe('Объект');
   });
+  it('строим карту', () => {
+    api.getData = jest.fn();
+    let wrapper = mount(Main, {});
+
+    expect(wrapper.find('div.leaflet-map-pane').exists()).toBeTruthy();
+  });
+  it('выбрали объект должен появится маркер', () => {
+    api.getData = jest.fn();
+    let wrapper = mount(Main, {});
+    wrapper.vm.setPosition = jest.fn();
+    wrapper.vm.nodeSelected({data: {lat: 1, lon: 1, type: 'object'}});
+    expect(wrapper.vm.setPosition.mock.calls.length).toBe(1);
+  });
+  it('выбрали не объект должен удаляется маркер', () => {
+    api.getData = jest.fn();
+    let wrapper = mount(Main, {});
+    wrapper.vm.setPosition = jest.fn();
+    wrapper.vm.resetPosition = jest.fn();
+    wrapper.vm.nodeSelected({data: {lat: 1, lon: 1, type: 'company'}});
+    expect(wrapper.vm.setPosition.mock.calls.length).toBe(0);
+    expect(wrapper.vm.resetPosition.mock.calls.length).toBe(1);
+  });
 });

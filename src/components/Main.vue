@@ -1,7 +1,10 @@
 <template>
     <div class="container">
-        <tree :data="tree" :options="treeOptions" @node:selected="nodeSelected"  @tree:data:fetch="dataReceived()" class="container__tree"></tree>
+        <tree :data="tree" :options="treeOptions" @node:selected="nodeSelected" @tree:data:fetch="dataReceived()"
+              class="container__tree"></tree>
         <div class="container__main side-container">
+            <div class="side-container__map" ref="map">
+            </div>
             <div class="side-container__info">
                 <ul v-if="currentItem" class="cell-container">
                     <li class="cell-container__cell  info-cell">
@@ -30,9 +33,6 @@
                     </li>
                 </ul>
             </div>
-            <div class="side-container__map">
-
-            </div>
         </div>
     </div>
 </template>
@@ -41,10 +41,13 @@
   //liquor-tree
   import {getData} from '../services/api';
   import LiquorTree from 'liquor-tree';
+  import {Map, TileLayer, Marker, CircleMarker} from 'leaflet';
 
   export default {
     name: 'Main',
-    components: {[LiquorTree.name]: LiquorTree},
+    components: {
+      [LiquorTree.name]: LiquorTree,
+    },
     data() {
       return {
         tree: getData(),
@@ -55,6 +58,11 @@
     methods: {
       nodeSelected(node) {
         this.currentItem = node.data;
+        if (this.currentItem.type === 'object') {
+          this.setPosition([this.currentItem.lat, this.currentItem.lon]);
+        } else {
+          this.resetPosition();
+        }
       },
       getTypeDescription(type) {
         switch (type) {
@@ -66,9 +74,30 @@
             return 'Объект';
         }
       },
-      dataReceived(){
-        console.log('received');
-      }
+      setPosition(pos) {
+        this.map.panTo(pos, {animate: true, duration: 0.5});
+        if (!this.marker) {
+          this.marker = new CircleMarker(pos);
+          this.map.addLayer(this.marker);
+        } else {
+          this.marker.setLatLng(pos);
+        }
+      },
+      resetPosition() {
+        this.map.panTo([58.027943, 56.301257], {animate: true, duration: 0.5});
+        if (this.marker) {
+          this.marker.removeFrom(this.map);
+          this.marker = null;
+        }
+      },
+    },
+    mounted() {
+      let map = new Map(this.$refs.map);
+      map.setView([58.027943, 56.301257], 17);
+      let tile = new TileLayer(
+          'https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw');
+      tile.addTo(map);
+      this.map = map;
     },
   };
 </script>
@@ -96,7 +125,7 @@
     }
 
     .side-container__map {
-
+        flex-basis: 600px;
     }
 
     .cell-container {
